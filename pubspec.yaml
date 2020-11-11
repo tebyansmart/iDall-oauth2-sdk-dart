@@ -1,4 +1,4 @@
-name: idall_authenticator
+name: idall_in_app_authentication
 description: A package to handle authorization with idall based on oAuth2
 version: 0.0.1
 author:

@@ -12,7 +12,7 @@ import 'open_id_config_model.dart';
 import 'refresh_token.dart';
 import 'token_data.dart';
 
-class IdallAuthenticator{
+class IdallAuthenticatorHelper{
 
   OpenIdConfigModel _idallConfig;
   oauth2.AuthorizationCodeGrant _grant;
@@ -28,11 +28,11 @@ class IdallAuthenticator{
   String _clientId;
 
   ///make class singleton
-  static final IdallAuthenticator _instance = IdallAuthenticator._internal();
+  static final IdallAuthenticatorHelper _instance = IdallAuthenticatorHelper._internal();
 
-  factory IdallAuthenticator() => _instance;
+  factory IdallAuthenticatorHelper() => _instance;
 
-  IdallAuthenticator._internal(){
+  IdallAuthenticatorHelper._internal(){
     _userIsAuthenticatedSubject= BehaviorSubject<bool>();
     _userIsAuthenticatedSubject.add(false);
     _tokenLocalDataSource=TokenLocalDataSource();
