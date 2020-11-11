@@ -24,8 +24,5 @@ dev_dependencies:
 
 
 flutter:
-  fonts:
-    - family: YekiFaNum-Medium
-      fonts:
-        - asset: fonts/YekiFaNum-Medium.ttf
+
 
