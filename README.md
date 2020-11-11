@@ -76,7 +76,7 @@ This allows for your app to be started from `idall-flutter-auth://ANYTHING` link
 
 ## Usage
 
-####initializing
+#### initializing
 
 to set IdallAuthenticator use: `setIdallConfig`
 
@@ -90,7 +90,7 @@ to launch login page and get token from idall use: `authenticate`
 ```dart
 bool res=await IdallAuthenticator().authenticate();
 ```
-####use
+#### use
 to get access token, refresh token and expiration date use: `getAccessToken, getRefreshToken, getAccessTokenExpirationDate`
 ```dart
 String accessToken= await IdallAuthenticator().getAccessToken();
