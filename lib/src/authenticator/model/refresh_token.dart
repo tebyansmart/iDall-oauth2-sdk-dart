@@ -24,13 +24,13 @@ class RefreshToken {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id_token'] = this.idToken;
-    data['access_token'] = this.accessToken;
-    data['expires_in'] = this.expiresIn;
-    data['token_type'] = this.tokenType;
-    data['refresh_token'] = this.refreshToken;
-    data['scope'] = this.scope;
+    final data = <String, dynamic>{};
+    data['id_token'] = idToken;
+    data['access_token'] = accessToken;
+    data['expires_in'] = expiresIn;
+    data['token_type'] = tokenType;
+    data['refresh_token'] = refreshToken;
+    data['scope'] = scope;
     return data;
   }
 }

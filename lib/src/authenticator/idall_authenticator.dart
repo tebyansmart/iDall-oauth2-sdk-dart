@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -8,11 +9,12 @@ import '../local_data_source/token_local_data_source.dart';
 import 'package:http/http.dart' as http;
 import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'open_id_config_model.dart';
-import 'refresh_token.dart';
-import 'token_data.dart';
+import 'model/idall_response_modes.dart';
+import 'model/open_id_config_model.dart';
+import 'model/refresh_token.dart';
+import 'model/token_data.dart';
 
-class IdallAuthenticatorHelper{
+class IdallAuthenticator{
 
   OpenIdConfigModel _idallConfig;
   oauth2.AuthorizationCodeGrant _grant;
@@ -28,16 +30,48 @@ class IdallAuthenticatorHelper{
   String _clientId;
 
   ///make class singleton
-  static final IdallAuthenticatorHelper _instance = IdallAuthenticatorHelper._internal();
+  static final IdallAuthenticator _instance = IdallAuthenticator._internal();
 
-  factory IdallAuthenticatorHelper() => _instance;
+  factory IdallAuthenticator() => _instance;
 
-  IdallAuthenticatorHelper._internal(){
+  IdallAuthenticator._internal(){
     _userIsAuthenticatedSubject= BehaviorSubject<bool>();
     _userIsAuthenticatedSubject.add(false);
     _tokenLocalDataSource=TokenLocalDataSource();
     _listenForAuthCode();
   }
+
+
+  Future<IdallResponseModes> setIdallConfig(String clientId,String scopes) async {
+    try {
+      var result = await _getIdallConfiguration();
+
+      if(result==IdallResponseModes.success) {
+        _grant = oauth2.AuthorizationCodeGrant(
+            clientId,
+            Uri.parse(_idallConfig.authorizationEndpoint),
+            Uri.parse(_idallConfig.tokenEndpoint),
+            httpClient: http.Client());
+
+
+        _authorizationUrl = _grant.getAuthorizationUrl(_redirectUrl, scopes: [
+          scopes,
+        ]);;
+        _clientId = clientId;
+      }
+      return result;
+    }
+    catch (error, stacktrace) {
+      debugPrint('error in get OpenIdConfigs is $error  $stacktrace');
+      return IdallResponseModes.unknownError;
+    }
+  }
+  Future<bool> authenticate() async{
+    assert(_idallConfig != null);
+    debugPrint('idall  token endpoint is $_authorizationUrl');
+    return await launch(_authorizationUrl.toString(),);
+  }
+
 
   Future<String> getAccessToken() async {
     return _tokenLocalDataSource.getAccessToken();
@@ -59,8 +93,8 @@ class IdallAuthenticatorHelper{
     getLinksStream().listen((event) {
       debugPrint('listened value for link is $event');
       if (event.contains('code')) {
-        Uri uri = Uri.parse(event);
-        String code= uri.queryParameters['code'];
+        var uri = Uri.parse(event);
+        var code= uri.queryParameters['code'];
         debugPrint('code is $code');
         _getAccessTokenFrom(event);
       }
@@ -68,12 +102,12 @@ class IdallAuthenticatorHelper{
   }
   Future<void> _getAccessTokenFrom(String codeUrl) async {
     try {
-      Uri uri = Uri.parse(codeUrl);
-      oauth2.Client accessTokenClient =
+      var uri = Uri.parse(codeUrl);
+      var accessTokenClient =
       await _grant.handleAuthorizationResponse(uri.queryParameters);
       debugPrint(
           'response for access token  ${accessTokenClient.credentials.accessToken}');
-      TokenData tokenData= TokenData(accessToken: accessTokenClient.credentials.accessToken,
+      var tokenData= TokenData(accessToken: accessTokenClient.credentials.accessToken,
           expirationDate: accessTokenClient.credentials.expiration.millisecondsSinceEpoch,
           refreshToken: accessTokenClient.credentials.refreshToken);
 
@@ -99,35 +133,11 @@ class IdallAuthenticatorHelper{
   Future<void> _saveRefreshToken(String refreshToken) async => await _tokenLocalDataSource.setRefreshTokenToSharedPref(refreshToken);
 
 
-  Future<bool> setIdallConfig(String clientId,String scopes) async {
-    try {
-      var result = await _getIdallConfiguration();
 
-        this._idallConfig=result;
-        _grant = oauth2.AuthorizationCodeGrant(
-            clientId,
-            Uri.parse(_idallConfig.authorizationEndpoint),
-            Uri.parse(_idallConfig.tokenEndpoint),
-            httpClient: http.Client());
-
-        Uri authorizationUrl = _grant.getAuthorizationUrl(_redirectUrl, scopes: [
-          scopes,
-        ]);
-        this._authorizationUrl = authorizationUrl;
-      _clientId=clientId;
-        return true;
-      }
-      catch (error, stacktrace) {
-      debugPrint('error in get OpenIdConfigs is $error  $stacktrace');
-      return false;
-    }
-  }
-  Future<OpenIdConfigModel> _getIdallConfiguration() async {
+  Future<IdallResponseModes> _getIdallConfiguration() async {
     try {
-      String fullUrl = Uri.http(_idallDomain, _path, {})
+      var fullUrl = Uri.http(_idallDomain, _path, {})
           .toString();
-
-
       /// make http call
       final response = await Dio()
           .get(fullUrl,
@@ -136,35 +146,36 @@ class IdallAuthenticatorHelper{
             responseType: ResponseType.json,
             validateStatus: (statusCode) => statusCode < 550,
           ));
-
-      if(response.statusCode!=200)
-        throw Exception();
-
-      OpenIdConfigModel result= OpenIdConfigModel.fromJson(json.decode(json.encode(response.data)));
-      return result;
-
-    } catch (error, stack) {
-      debugPrint("error in get  $error,$stack");
-      throw Exception();
+      try{
+        if(_httpRequestEnumHandler(response.statusCode)==IdallResponseModes.success) {
+          _idallConfig= OpenIdConfigModel.fromJson(json.decode(json.encode(response.data)));
+        }
+        return _httpRequestEnumHandler(response.statusCode);
+      }catch(e){
+        return IdallResponseModes.failedToParseJson;
+      }
+    } on TimeoutException
+    {
+      return IdallResponseModes.requestTimeOut;
+    }
+    catch (error, stack) {
+      debugPrint('error in get  $error,$stack');
+      return IdallResponseModes.unknownError;
     }
   }
 
 
-  Future<bool> authenticate() async{
-    assert(_idallConfig != null);
-   return await launch(_authorizationUrl.toString(),);
-  }
 
 
-  Future<bool> refreshTokenIfExpired() async{
+  Future<IdallResponseModes> refreshTokenIfExpired() async{
     if (await _isTokenExpired()) {
-      bool refreshTokenResult =
+      var refreshTokenResult =
       await doRefreshToken();
-      if (!refreshTokenResult) {
-        return false;
+      if (refreshTokenResult!=IdallResponseModes.success) {
+        return refreshTokenResult;
       }
     }
-    return true;
+    return IdallResponseModes.success;
   }
   Future<bool> _isTokenExpired() async {
 
@@ -175,9 +186,9 @@ class IdallAuthenticatorHelper{
     debugPrint('token is not expired');
     return false;
   }
-  Future<bool> doRefreshToken() async {
+  Future<IdallResponseModes> doRefreshToken() async {
     try {
-      Map<String, dynamic> body = _getRefreshTokenBody(await _tokenLocalDataSource.getRefreshToken());
+      var body = _getRefreshTokenBody(await _tokenLocalDataSource.getRefreshToken());
       debugPrint(
           'body for refresh token is ${_idallConfig.tokenEndpoint} $body');
 
@@ -193,18 +204,19 @@ class IdallAuthenticatorHelper{
       debugPrint(
           'refresh token result ${response.statusCode}  ${response.data}');
 
-      if (response.statusCode==200) {
-        RefreshToken refreshToken = RefreshToken.fromJson(response.data);
-        await _updateValuesInSharedPref(refreshToken);
-        return true;
+      if(_httpRequestEnumHandler(response.statusCode)==IdallResponseModes.success){
+        try{
+          var refreshToken = RefreshToken.fromJson(response.data);
+          await _updateValuesInSharedPref(refreshToken);
+        }catch(e){
+          return IdallResponseModes.failedToParseJson;
+        }
       }
+      return _httpRequestEnumHandler(response.statusCode);
 
-      else {
-        return false;
-      }
     } catch (error, stackTrace) {
       debugPrint('error in refresh token $error $stackTrace');
-      return false;
+      return IdallResponseModes.unknownError;
     }
   }
   Map<String, dynamic> _getRefreshTokenBody(String refreshToken) {
@@ -238,5 +250,42 @@ class IdallAuthenticatorHelper{
     await _tokenLocalDataSource.clearTokenSharedPref();
   }
 
+  IdallResponseModes _httpRequestEnumHandler(int statusCode){
+    switch (statusCode){
+      case 200:
+        return IdallResponseModes.success;
+        break;
+    case 201:
+    return IdallResponseModes.success;
+    break;
+    case 204:
+    return IdallResponseModes.success;
+    break;
+    case 500:
+    return IdallResponseModes.internalServerError;
+    break;
+    case 400:
+    return IdallResponseModes.badRequest;
+    break;
+    case 401:
+    return IdallResponseModes.unauthorized;
+    break;
+    case 415:
+    return IdallResponseModes.unsupportedMediaType;
+    break;
+    case 404:
+    return IdallResponseModes.notFound;
+    break;
+    case 405:
+    return IdallResponseModes.methodNotAllowed;
+    break;
+      case 403:
+        return IdallResponseModes.forbidden;
+        break;
+      default:
+        return IdallResponseModes.unknownError;
+        break;
+    }
+  }
 
 }

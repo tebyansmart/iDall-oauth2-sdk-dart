@@ -76,19 +76,40 @@ This allows for your app to be started from `idall-flutter-auth://ANYTHING` link
 
 ## Usage
 
+#### introduce response model
+
+return type of Idall authenticator is an enum: `IdallResponseModes`
+
+```dart
+enum IdallResponseModes{
+  success, //this means operation succeeded, otherwise there is an error
+  internalServerError, 
+  requestTimeOut,
+  badRequest,
+  forbidden,
+  methodNotAllowed,
+  notFound,
+  unauthorized,
+  unsupportedMediaType,
+  failedToParseJson,
+  unknownError,
+}
+```
+
+
 #### initializing
 
 to set IdallAuthenticator use: `setIdallConfig`
 
 ```dart
- bool res=await IdallAuthenticatorHelper().setIdallConfig('client_id','openid offline_access'); //define application scopes, 
+ var res=await IdallAuthenticatorHelper().setIdallConfig('client_id','openid offline_access'); //define application scopes, 
 //add openid if you want authorization, add offline_access if you want refresh token
 ```
 
 to launch login page and get token from idall use: `authenticate`
 
 ```dart
-bool res=await IdallAuthenticatorHelper().authenticate();
+var res=await IdallAuthenticatorHelper().authenticate();
 ```
 #### use
 to get access token, refresh token and expiration date use: `getAccessToken, getRefreshToken, getAccessTokenExpirationDate`
@@ -101,15 +122,15 @@ int accessTokenExpirationDate=  await IdallAuthenticatorHelper().getAccessTokenE
 ```
  to see if client has access token: `hasAccessToken`
  ```dart
- bool hasToken= await IdallAuthenticatorHelper().hasAccessToken();
+ var hasToken= await IdallAuthenticatorHelper().hasAccessToken();
  ```
 to refresh token use: `refreshTokenIfExpired`
  ```dart
- bool res= await IdallAuthenticatorHelper().refreshTokenIfExpired();
+ var res= await IdallAuthenticatorHelper().refreshTokenIfExpired();
  ```
 to force refresh token use: `doRefreshToken`
  ```dart
- bool res= await IdallAuthenticatorHelper().doRefreshToken();
+ var res= await IdallAuthenticatorHelper().doRefreshToken();
  ```
 to reset configs use: `reset`
  ```dart

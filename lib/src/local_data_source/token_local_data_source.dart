@@ -11,16 +11,16 @@ class TokenLocalDataSource{
   }
 
 
-  static const String _ACCESS_TOKEN_KEY = "access_idall_token_key";
+  static const String _ACCESS_TOKEN_KEY = 'access_idall_token_key';
   static const String _ACCESS_TOKEN_EXPIRATION_KEY =
-      "expiration_idall_access_token_key";
+      'expiration_idall_access_token_key';
 
-  static const String _REFRESH_TOKEN_KEY = "refresh_token_idall";
+  static const String _REFRESH_TOKEN_KEY = 'refresh_token_idall';
 
 
   
   Future<String> getAccessToken() async {
-    String token =
+    var token =
     await _tokenStorageClient.getValueFromSharedPref(_ACCESS_TOKEN_KEY);
     debugPrint('access token is: $token');
     return token;
@@ -29,7 +29,7 @@ class TokenLocalDataSource{
   
   Future<int> getAccessTokenExpirationDate() async {
     try {
-      String stringDate =await _tokenStorageClient.
+      var stringDate =await _tokenStorageClient.
       getValueFromSharedPref(_ACCESS_TOKEN_EXPIRATION_KEY);
       return int.tryParse(stringDate);
     } catch (error) {
