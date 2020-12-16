@@ -32,12 +32,12 @@ class IdallInAppAuthenticationPlugin: FlutterPlugin, MethodCallHandler {
     channel.setMethodCallHandler(this)
   }
 
-  override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
-    GeneratedPluginRegistrant.registerWith(flutterEngine)
-    methodChannel = MethodChannel(getFlutterEngine()!!.dartExecutor.binaryMessenger, CHANNEL)
-
-
-  }
+//  override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+//    GeneratedPluginRegistrant.registerWith(flutterEngine)
+//    methodChannel = MethodChannel(getFlutterEngine()!!.dartExecutor.binaryMessenger, CHANNEL)
+//
+//
+//  }
 
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     if (call.method == "getPlatformVersion") {
