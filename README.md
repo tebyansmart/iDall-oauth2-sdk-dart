@@ -19,13 +19,15 @@ Android and iOS require to declare links' permission in a configuration file.
 
 #### For Android
 You need to declare this
-filter in `android/app/src/main/AndroidManifest.xml`:
+filter in `android/app/src/main/AndroidManifest.xml` and make launchMode in activity tag `singleInstance`:
 
 ```xml
 <manifest ...>
   <!-- ... other tags -->
   <application ...>
-    <activity ...>
+    <activity
+    android:launchMode="singleInstance"
+    >
       <!-- ... other tags -->
 
       <!-- Deep Links -->

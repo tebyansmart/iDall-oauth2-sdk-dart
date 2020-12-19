@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -24,7 +23,7 @@ class IdallInAppAuthentication{
   oauth2.AuthorizationCodeGrant _grant;
   Uri _authorizationUrl;
   BehaviorSubject<bool> _userIsAuthenticatedSubject;
-  TokenLocalDataSource _tokenLocalDataSource;
+  LocalDataSource _localDataSource;
   ///a stream that shows user is authenticated
   Stream<bool> get userIsAuthenticated=> _userIsAuthenticatedSubject;
 
@@ -45,7 +44,7 @@ class IdallInAppAuthentication{
   IdallInAppAuthentication._internal(){
     _userIsAuthenticatedSubject= BehaviorSubject<bool>();
     _userIsAuthenticatedSubject.add(false);
-    _tokenLocalDataSource=TokenLocalDataSource();
+    _localDataSource=LocalDataSource();
   }
 
 
@@ -88,65 +87,52 @@ class IdallInAppAuthentication{
 
 
   Future<String> getAccessToken() async {
-    return _tokenLocalDataSource.getAccessToken();
+    return _localDataSource.getAccessTokenFromMemory();
   }
 
   Future<int> getAccessTokenExpirationDate() async {
-      return _tokenLocalDataSource.getAccessTokenExpirationDate();
+      return _localDataSource.getAccessTokenExpirationDateFromMemory();
   }
 
   Future<String> getRefreshToken() async {
-    return await _tokenLocalDataSource.getRefreshToken();
+    return await _localDataSource.getRefreshTokenFromMemory();
   }
 
   Future<String> getClientId() async {
-    return await _tokenLocalDataSource.getClientId();
+    return await _localDataSource.getClientIdFromMemory();
   }
 
   Future<String> getScopes() async {
-    return await _tokenLocalDataSource.getScopes();
+    return await _localDataSource.getScopesFromMemory();
   }
 
   Future<String> getCodeVerifier() async {
-    return await _tokenLocalDataSource.getCodeVerifier();
+    return await _localDataSource.getCodeVerifierFromMemory();
   }
 
   Future<String> _getState() async{
-    return await _tokenLocalDataSource.getIdallState();
+    return await _localDataSource.getIdallStateFromMemory();
   }
 
 
   Future<bool> hasAccessToken() async {
-    return _tokenLocalDataSource.hasAccessToken();
+    return _localDataSource.hasAccessToken();
   }
 
   void listenForAuthCode() async{
-    if(Platform.isAndroid) platform.setMethodCallHandler( (MethodCall methodCall) async {
-      if(methodCall.method=='idallUrl') {
-        String event=methodCall.arguments;
-          debugPrint('listened value for link is $event');
-          if (event.contains('code')) {
-            Uri uri = Uri.parse(event);
-            String code = uri.queryParameters['code'];
-            debugPrint('code is $code');
-            print('client id is : $_clientId');
-            String state = uri.queryParameters['state'];
-            if(state!= (await _getState())) {
-              throw(Exception('state in login is not verified'));
-            }
-           await _getAccessTokenFrom(event);
-          }
-        }
-      return Future((){});
-      });
-    if(Platform.isIOS)getLinksStream().listen((event) {
+   getLinksStream().listen((event) async {
       debugPrint('listened value for link is $event');
       if (event.contains('code')) {
         Uri uri = Uri.parse(event);
-        String code= uri.queryParameters['code'];
+        String code = uri.queryParameters['code'];
         debugPrint('code is $code');
-        _getAccessTokenFrom(event);
+        print('client id is : $_clientId');
+        String state = uri.queryParameters['state'];
+        if(state!= (await _getState())) {
+      throw(Exception('state in login is not verified'));
       }
+      await _getAccessTokenFrom(event);
+    }
     });
   }
   Future<void> _getAccessTokenFrom(String codeUrl) async {
@@ -175,16 +161,16 @@ class IdallInAppAuthentication{
     }
   }
   ///this method save access token in secure storage
-  Future<void> _saveAccessToken(String accessToken) async => await _tokenLocalDataSource.setAccessTokenToSecureStorage(accessToken);
+  Future<void> _saveAccessToken(String accessToken) async => await _localDataSource.setAccessTokenToMemory(accessToken);
   ///this method saves expiration token in secure storage
-  Future<void> _saveExpirationDate(int expirationDate) async => await _tokenLocalDataSource.setExpirationDateToSharedPref(expirationDate.toString());
+  Future<void> _saveExpirationDate(int expirationDate) async => await _localDataSource.setExpirationDateToMemory(expirationDate.toString());
   ///this method save refresh token in secure storage
-  Future<void> _saveRefreshToken(String refreshToken) async => await _tokenLocalDataSource.setRefreshTokenToSecureStorage(refreshToken);
+  Future<void> _saveRefreshToken(String refreshToken) async => await _localDataSource.setRefreshTokenToMemory(refreshToken);
 
-  Future<void> _saveClientId(String clientId) async => await _tokenLocalDataSource.setClientIdToSharedPref(clientId);
-  Future<void> _saveScopes(String scopes) async => await _tokenLocalDataSource.setScopesToSharedPref(scopes);
-  Future<void> _saveCodeVerifier(String codeVerifier) async => await _tokenLocalDataSource.setCodeVerifierToSecureStorage(codeVerifier);
-  Future<void> _saveState(String state) async=> await _tokenLocalDataSource.setIdallStateToSecureStorage(state);
+  Future<void> _saveClientId(String clientId) async => await _localDataSource.setClientIdToMemory(clientId);
+  Future<void> _saveScopes(String scopes) async => await _localDataSource.setScopesToMemory(scopes);
+  Future<void> _saveCodeVerifier(String codeVerifier) async => await _localDataSource.setCodeVerifierToMemory(codeVerifier);
+  Future<void> _saveState(String state) async=> await _localDataSource.setIdallStateToMemory(state);
 
   Future<IdallResponseModes> _getIdallConfiguration() async {
     try {
@@ -227,7 +213,7 @@ class IdallInAppAuthentication{
   }
   Future<bool> _isTokenExpired() async {
 
-    if (DateTime.now().millisecondsSinceEpoch >=( (await _tokenLocalDataSource.getAccessTokenExpirationDate()) ?? 0)) {
+    if (DateTime.now().millisecondsSinceEpoch >=( (await _localDataSource.getAccessTokenExpirationDateFromMemory()) ?? 0)) {
       debugPrint('token expired and should get new token');
       return true;
     }
@@ -236,7 +222,7 @@ class IdallInAppAuthentication{
   }
   Future<IdallResponseModes> doRefreshToken() async {
     try {
-      Map<String, dynamic> body = _getRefreshTokenBody(await _tokenLocalDataSource.getRefreshToken());
+      Map<String, dynamic> body = _getRefreshTokenBody(await _localDataSource.getRefreshTokenFromMemory());
       debugPrint(
           'body for refresh token is ${_idallConfig.tokenEndpoint} $body');
 
@@ -276,14 +262,14 @@ class IdallInAppAuthentication{
   }
   Future<void> _updateValuesInSharedPref(RefreshToken refreshToken) async {
 
-    await _tokenLocalDataSource
-        .setAccessTokenToSecureStorage(refreshToken.accessToken);
-    await _tokenLocalDataSource.setExpirationDateToSharedPref(
+    await _localDataSource
+        .setAccessTokenToMemory(refreshToken.accessToken);
+    await _localDataSource.setExpirationDateToMemory(
         (((refreshToken.expiresIn * 1000) +
             DateTime.now().millisecondsSinceEpoch))
             .toString());
-    await _tokenLocalDataSource
-        .setRefreshTokenToSecureStorage(refreshToken.refreshToken);
+    await _localDataSource
+        .setRefreshTokenToMemory(refreshToken.refreshToken);
   }
 
   Future<void> reset() async {
@@ -294,8 +280,7 @@ class IdallInAppAuthentication{
     _clientId=null;
     _userIsAuthenticatedSubject.add(false);
     debugPrint('clearing secure storage');
-    await _tokenLocalDataSource.clearIdallSharedPref();
-    await _tokenLocalDataSource.clearTokenSecureStorage();
+    await _localDataSource.clearIdallMemory();
   }
 
   IdallResponseModes _httpRequestEnumHandler(int statusCode){

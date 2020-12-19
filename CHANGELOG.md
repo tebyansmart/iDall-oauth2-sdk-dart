@@ -1,7 +1,3 @@
-## [0.0.3] - 2020.12.16
-* add Android native handler for listening to incoming intent
-
-
 ## [0.0.2] - 2020.12.8
 * change return values based on Idall response
 
