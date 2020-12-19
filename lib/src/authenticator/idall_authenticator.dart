@@ -5,7 +5,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:idall_in_app_authentication/src/local_data_source/local_data_source.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
-import 'package:rxdart/rxdart.dart';
 import 'package:http/http.dart' as http;
 import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -22,10 +21,10 @@ class IdallInAppAuthentication{
   OpenIdConfigModel _idallConfig;
   oauth2.AuthorizationCodeGrant _grant;
   Uri _authorizationUrl;
-  BehaviorSubject<bool> _userIsAuthenticatedSubject;
+  StreamController<bool> _userIsAuthenticatedSubject;
   LocalDataSource _localDataSource;
   ///a stream that shows user is authenticated
-  Stream<bool> get userIsAuthenticated=> _userIsAuthenticatedSubject;
+  Stream<bool> get userIsAuthenticated=> _userIsAuthenticatedSubject.stream;
 
    final Uri _redirectUrl =  Uri.parse('idall://idall-flutter-auth');
   static const String _idallDomain='accounts.idall.pro';
@@ -42,7 +41,7 @@ class IdallInAppAuthentication{
   factory IdallInAppAuthentication() => _instance;
 
   IdallInAppAuthentication._internal(){
-    _userIsAuthenticatedSubject= BehaviorSubject<bool>();
+    _userIsAuthenticatedSubject= StreamController<bool>();
     _userIsAuthenticatedSubject.add(false);
     _localDataSource=LocalDataSource();
     _listenForAuthCode();
