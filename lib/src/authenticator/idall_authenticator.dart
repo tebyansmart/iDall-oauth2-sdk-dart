@@ -41,7 +41,7 @@ class IdallInAppAuthentication{
   factory IdallInAppAuthentication() => _instance;
 
   IdallInAppAuthentication._internal(){
-    _userIsAuthenticatedSubject= StreamController<bool>();
+    _userIsAuthenticatedSubject= StreamController<bool>.broadcast();
     _userIsAuthenticatedSubject.add(false);
     _localDataSource=LocalDataSource();
     _listenForAuthCode();
