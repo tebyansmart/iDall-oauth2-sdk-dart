@@ -45,6 +45,7 @@ class IdallInAppAuthentication{
     _userIsAuthenticatedSubject= BehaviorSubject<bool>();
     _userIsAuthenticatedSubject.add(false);
     _localDataSource=LocalDataSource();
+    _listenForAuthCode();
   }
 
 
@@ -119,7 +120,7 @@ class IdallInAppAuthentication{
     return _localDataSource.hasAccessToken();
   }
 
-  void listenForAuthCode() async{
+  void _listenForAuthCode() async{
    getLinksStream().listen((event) async {
       debugPrint('listened value for link is $event');
       if (event.contains('code')) {
