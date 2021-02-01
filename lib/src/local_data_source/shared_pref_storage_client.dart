@@ -7,6 +7,8 @@ import '../strs.dart';
 class SharedPrefStorageClient {
   Future<String> getValueFromSharedPref(String key) async {
     try {
+      var box = Hive.box(Strs.hiveBox);
+      return box.get(key);
       // SharedPreferences pref = await SharedPreferences.getInstance();
       // return pref.getString(key) ?? null;
     } catch (error, stackTrace) {
@@ -15,17 +17,7 @@ class SharedPrefStorageClient {
     }
   }
 
-  Future<List<String>> getListValueFromSharedPref(String key) async {
-    try {
-      var box = Hive.box(Strs.hiveBox);
-      return box.get(key);
-      // SharedPreferences pref = await SharedPreferences.getInstance();
-      // return pref.getStringList(key) ?? null;
-    } catch (error, stackTrace) {
-      debugPrint('error in get value from Storage $error , $stackTrace');
-      return error;
-    }
-  }
+
 
   Future<void> setValueToSharedPref({String key, String value}) async {
     try {
