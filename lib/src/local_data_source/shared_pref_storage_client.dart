@@ -7,6 +7,8 @@ import '../strs.dart';
 class SharedPrefStorageClient {
   Future<String> getValueFromSharedPref(String key) async {
     try {
+      if(!Hive.isBoxOpen(Strs.hiveBox))
+        Hive.openBox(Strs.hiveBox);
       var box = Hive.box(Strs.hiveBox);
       return box.get(key);
       // SharedPreferences pref = await SharedPreferences.getInstance();
@@ -21,6 +23,8 @@ class SharedPrefStorageClient {
 
   Future<void> setValueToSharedPref({String key, String value}) async {
     try {
+      if(!Hive.isBoxOpen(Strs.hiveBox))
+        Hive.openBox(Strs.hiveBox);
       var box = Hive.box(Strs.hiveBox);
       box.put(key, value);
 
