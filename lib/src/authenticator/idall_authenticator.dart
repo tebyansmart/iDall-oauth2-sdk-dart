@@ -7,8 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
+import 'package:idall_in_app_authentication/src/idall_strs.dart';
 import 'package:idall_in_app_authentication/src/local_data_source/local_data_source.dart';
-import 'package:idall_in_app_authentication/src/strs.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:path_provider/path_provider.dart';
 import 'package:uni_links/uni_links.dart';
@@ -57,7 +57,7 @@ class IdallInAppAuthentication {
     try {
       var dir = await getApplicationDocumentsDirectory();
       Hive.init(dir.path);
-      var box = await Hive.openBox(Strs.hiveBox);
+      var box = await Hive.openBox(IdallStrs.hiveBox);
 
       IdallResponseModes result = await _getIdallConfiguration();
       if (result == IdallResponseModes.success) {

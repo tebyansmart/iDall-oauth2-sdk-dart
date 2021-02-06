@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
+import 'package:idall_in_app_authentication/src/idall_strs.dart';
 
-import '../strs.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPrefStorageClient {
   Future<String> getValueFromSharedPref(String key) async {
     try {
-      if(!Hive.isBoxOpen(Strs.hiveBox))
-      await  Hive.openBox(Strs.hiveBox);
-      var box = Hive.box(Strs.hiveBox);
+      if(!Hive.isBoxOpen(IdallStrs.hiveBox))
+      await  Hive.openBox(IdallStrs.hiveBox);
+      var box = Hive.box(IdallStrs.hiveBox);
       return box.get(key);
       // SharedPreferences pref = await SharedPreferences.getInstance();
       // return pref.getString(key) ?? null;
@@ -23,9 +23,9 @@ class SharedPrefStorageClient {
 
   Future<void> setValueToSharedPref({String key, String value}) async {
     try {
-      if(!Hive.isBoxOpen(Strs.hiveBox))
-       await Hive.openBox(Strs.hiveBox);
-      var box = Hive.box(Strs.hiveBox);
+      if(!Hive.isBoxOpen(IdallStrs.hiveBox))
+       await Hive.openBox(IdallStrs.hiveBox);
+      var box = Hive.box(IdallStrs.hiveBox);
       box.put(key, value);
 
       // SharedPreferences pref = await SharedPreferences.getInstance();
@@ -48,7 +48,7 @@ class SharedPrefStorageClient {
 
   Future<void> clearSharedPref({List<String> keys}) async {
     try {
-      var box = Hive.box(Strs.hiveBox);
+      var box = Hive.box(IdallStrs.hiveBox);
       box.clear();
       // SharedPreferences pref = await SharedPreferences.getInstance();
       // if (keys != null && keys.isNotEmpty) {
