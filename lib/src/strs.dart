@@ -1,5 +1,5 @@
 class Strs{
 
 
-  static const String hiveBox='hive_box';
+  static const String hiveBox='idall_hive_box';
 }
