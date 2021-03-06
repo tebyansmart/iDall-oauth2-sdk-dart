@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
@@ -134,6 +135,7 @@ class IdallInAppAuthentication {
   }
 
   void _listenForAuthCode() async {
+    if(Platform.isAndroid || Platform.isIOS)
     getLinksStream().listen((event) async {
       debugPrint('listened value for link is $event');
       if (event.contains('code')) {
