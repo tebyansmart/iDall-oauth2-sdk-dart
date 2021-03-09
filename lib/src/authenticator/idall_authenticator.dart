@@ -19,7 +19,6 @@ import 'model/refresh_token.dart';
 import 'model/token_data.dart';
 
 class IdallInAppAuthentication {
-  static const platform = const MethodChannel("samples.flutter.io/auth");
 
   OpenIdConfigModel _idallConfig;
   oauth2.AuthorizationCodeGrant _grant;
