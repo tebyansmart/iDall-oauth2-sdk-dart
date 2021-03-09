@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
@@ -205,20 +203,23 @@ class IdallInAppAuthentication {
 
   Future<IdallResponseModes> _getIdallConfiguration() async {
     try {
-      String fullUrl = Uri.http(_idallDomain, _path, {}).toString();
+      Uri fullUrl = Uri.http(_idallDomain, _path, {});
 
       /// make http call
-      final response = await Dio().get(fullUrl,
-          options: Options(
-            headers: {},
-            responseType: ResponseType.json,
-            validateStatus: (statusCode) => statusCode < 550,
-          ));
+
+
+      final response = await http.get(fullUrl,headers: {}
+          // options: Options(
+          //   headers: {},
+          //   responseType: ResponseType.json,
+          //   validateStatus: (statusCode) => statusCode < 550,
+          // )
+      );
       try {
         if (_httpRequestEnumHandler(response.statusCode) ==
             IdallResponseModes.success)
           this._idallConfig = OpenIdConfigModel.fromJson(
-              json.decode(json.encode(response.data)));
+              json.decode(json.encode(response.body)));
         return _httpRequestEnumHandler(response.statusCode);
       } catch (e) {
         return IdallResponseModes.failedToParseJson;
@@ -259,22 +260,25 @@ class IdallInAppAuthentication {
       debugPrint(
           'body for refresh token is ${_idallConfig.tokenEndpoint} $body');
 
-      var response = await Dio().post(_idallConfig.tokenEndpoint,
-          data: body,
-          options: Options(
-            headers: {},
-            contentType: Headers.formUrlEncodedContentType,
-            responseType: ResponseType.json,
-            validateStatus: (statusCode) => statusCode < 550,
-          ));
+      var response = await http.post(Uri.http(_idallConfig.tokenEndpoint,''),
+          body: body,
+          // options: Options(
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            // contentType: Headers.formUrlEncodedContentType,
+            // responseType: ResponseType.json,
+            // validateStatus: (statusCode) => statusCode < 550,
+
+      );
 
       debugPrint(
-          'refresh token result ${response.statusCode}  ${response.data}');
+          'refresh token result ${response.statusCode}  ${response.body}');
 
       if (_httpRequestEnumHandler(response.statusCode) ==
           IdallResponseModes.success) {
         try {
-          RefreshToken refreshToken = RefreshToken.fromJson(response.data);
+          RefreshToken refreshToken = RefreshToken.fromJson(json.decode(json.encode(response.body)));
           await _updateValuesInSharedPref(refreshToken);
         } catch (e) {
           return IdallResponseModes.failedToParseJson;
