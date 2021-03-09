@@ -7,7 +7,7 @@ class SharedPrefStorageClient {
   Future<String> getValueFromSharedPref(String key) async {
     try {
       SharedPreferences _prefs = await SharedPreferences.getInstance();
-      return _prefs.getString(key)?? '';
+      return _prefs.getString(key);
     } catch (error, stackTrace) {
       debugPrint('error in get value from Storage $error , $stackTrace');
       return error;
