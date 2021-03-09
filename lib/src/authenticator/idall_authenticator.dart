@@ -54,7 +54,6 @@ class IdallInAppAuthentication {
   Future<IdallResponseModes> setIdallConfig(
       String clientId, String scopes) async {
     try {
-      var dir = await getApplicationDocumentsDirectory();
 
       IdallResponseModes result = await _getIdallConfiguration();
       if (result == IdallResponseModes.success) {
