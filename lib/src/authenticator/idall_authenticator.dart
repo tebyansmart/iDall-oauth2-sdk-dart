@@ -4,12 +4,12 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:hive/hive.dart';
+// import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
-import 'package:idall_in_app_authentication/src/idall_strs.dart';
+// import 'package:idall_in_app_authentication/src/idall_strs.dart';
 import 'package:idall_in_app_authentication/src/local_data_source/local_data_source.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
-import 'package:path_provider/path_provider.dart';
+// import 'package:path_provider/path_provider.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -54,9 +54,9 @@ class IdallInAppAuthentication {
   Future<IdallResponseModes> setIdallConfig(
       String clientId, String scopes) async {
     try {
-      var dir = await getApplicationDocumentsDirectory();
-      Hive.init(dir.path);
-      var box = await Hive.openBox(IdallStrs.hiveBox);
+      // var dir = await getApplicationDocumentsDirectory();
+      // Hive.init(dir.path);
+      // var box = await Hive.openBox(IdallStrs.hiveBox);
 
       IdallResponseModes result = await _getIdallConfiguration();
       if (result == IdallResponseModes.success) {
