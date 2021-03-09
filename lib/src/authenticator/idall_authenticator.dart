@@ -131,6 +131,14 @@ class IdallInAppAuthentication {
   }
 
   void _listenForAuthCode() async {
+    if (kIsWeb)
+  {
+    print('uri info as follow:');
+    print(Uri.base.toString()); // http://localhost:8082/game.html?id=15&randomNumber=3.14
+    print(Uri.base.query);  // id=15&randomNumber=3.14
+    print(Uri.base.queryParameters['randomNumber']);
+    //todo:
+  }
     if(Platform.isAndroid || Platform.isIOS)
       getLinksStream().listen((event) async {
         debugPrint('listened value for link is $event');
