@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-// import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
-// import 'package:idall_in_app_authentication/src/idall_strs.dart';
 import 'package:idall_in_app_authentication/src/local_data_source/local_data_source.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
-// import 'package:path_provider/path_provider.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -40,7 +40,7 @@ class IdallInAppAuthentication {
 
   ///make class singleton
   static final IdallInAppAuthentication _instance =
-      IdallInAppAuthentication._internal();
+  IdallInAppAuthentication._internal();
 
   factory IdallInAppAuthentication() => _instance;
 
@@ -54,9 +54,7 @@ class IdallInAppAuthentication {
   Future<IdallResponseModes> setIdallConfig(
       String clientId, String scopes) async {
     try {
-      // var dir = await getApplicationDocumentsDirectory();
-      // Hive.init(dir.path);
-      // var box = await Hive.openBox(IdallStrs.hiveBox);
+      var dir = await getApplicationDocumentsDirectory();
 
       IdallResponseModes result = await _getIdallConfiguration();
       if (result == IdallResponseModes.success) {
@@ -134,33 +132,33 @@ class IdallInAppAuthentication {
 
   void _listenForAuthCode() async {
     if(Platform.isAndroid || Platform.isIOS)
-    getLinksStream().listen((event) async {
-      debugPrint('listened value for link is $event');
-      if (event.contains('code')) {
-        Uri uri = Uri.parse(event);
-        String code = uri.queryParameters['code'];
-        debugPrint('code is $code');
-        print('client id is : $_clientId');
-        String state = uri.queryParameters['state'];
-        if (state != (await _getState())) {
-          throw (Exception('state in login is not verified'));
+      getLinksStream().listen((event) async {
+        debugPrint('listened value for link is $event');
+        if (event.contains('code')) {
+          Uri uri = Uri.parse(event);
+          String code = uri.queryParameters['code'];
+          debugPrint('code is $code');
+          print('client id is : $_clientId');
+          String state = uri.queryParameters['state'];
+          if (state != (await _getState())) {
+            throw (Exception('state in login is not verified'));
+          }
+          await _getAccessTokenFrom(event);
         }
-        await _getAccessTokenFrom(event);
-      }
-    });
+      });
   }
 
   Future<void> _getAccessTokenFrom(String codeUrl) async {
     try {
       Uri uri = Uri.parse(codeUrl);
       oauth2.Client accessTokenClient =
-          await _grant.handleAuthorizationResponse(uri.queryParameters);
+      await _grant.handleAuthorizationResponse(uri.queryParameters);
       debugPrint(
           'response for access token  ${accessTokenClient.credentials.accessToken}');
       TokenData tokenData = TokenData(
           accessToken: accessTokenClient.credentials.accessToken,
           expirationDate:
-              accessTokenClient.credentials.expiration.millisecondsSinceEpoch,
+          accessTokenClient.credentials.expiration.millisecondsSinceEpoch,
           refreshToken: accessTokenClient.credentials.refreshToken);
 
       await _saveAccessToken(tokenData.accessToken);
@@ -203,23 +201,20 @@ class IdallInAppAuthentication {
 
   Future<IdallResponseModes> _getIdallConfiguration() async {
     try {
-      Uri fullUrl = Uri.http(_idallDomain, _path, {});
+      String fullUrl = Uri.http(_idallDomain, _path, {}).toString();
 
       /// make http call
-
-
-      final response = await http.get(fullUrl,headers: {}
-          // options: Options(
-          //   headers: {},
-          //   responseType: ResponseType.json,
-          //   validateStatus: (statusCode) => statusCode < 550,
-          // )
-      );
+      final response = await Dio().get(fullUrl,
+          options: Options(
+            headers: {},
+            responseType: ResponseType.json,
+            validateStatus: (statusCode) => statusCode < 550,
+          ));
       try {
         if (_httpRequestEnumHandler(response.statusCode) ==
             IdallResponseModes.success)
           this._idallConfig = OpenIdConfigModel.fromJson(
-              json.decode(json.encode(response.body)));
+              json.decode(json.encode(response.data)));
         return _httpRequestEnumHandler(response.statusCode);
       } catch (e) {
         return IdallResponseModes.failedToParseJson;
@@ -260,25 +255,22 @@ class IdallInAppAuthentication {
       debugPrint(
           'body for refresh token is ${_idallConfig.tokenEndpoint} $body');
 
-      var response = await http.post(Uri.http(_idallConfig.tokenEndpoint,''),
-          body: body,
-          // options: Options(
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            // contentType: Headers.formUrlEncodedContentType,
-            // responseType: ResponseType.json,
-            // validateStatus: (statusCode) => statusCode < 550,
-
-      );
+      var response = await Dio().post(_idallConfig.tokenEndpoint,
+          data: body,
+          options: Options(
+            headers: {},
+            contentType: Headers.formUrlEncodedContentType,
+            responseType: ResponseType.json,
+            validateStatus: (statusCode) => statusCode < 550,
+          ));
 
       debugPrint(
-          'refresh token result ${response.statusCode}  ${response.body}');
+          'refresh token result ${response.statusCode}  ${response.data}');
 
       if (_httpRequestEnumHandler(response.statusCode) ==
           IdallResponseModes.success) {
         try {
-          RefreshToken refreshToken = RefreshToken.fromJson(json.decode(json.encode(response.body)));
+          RefreshToken refreshToken = RefreshToken.fromJson(response.data);
           await _updateValuesInSharedPref(refreshToken);
         } catch (e) {
           return IdallResponseModes.failedToParseJson;
@@ -303,7 +295,7 @@ class IdallInAppAuthentication {
     await _localDataSource.setAccessTokenToMemory(refreshToken.accessToken);
     await _localDataSource.setExpirationDateToMemory(
         (((refreshToken.expiresIn * 1000) +
-                DateTime.now().millisecondsSinceEpoch))
+            DateTime.now().millisecondsSinceEpoch))
             .toString());
     await _localDataSource.setRefreshTokenToMemory(refreshToken.refreshToken);
   }
@@ -361,7 +353,7 @@ class IdallInAppAuthentication {
     String codeVerifier = await getCodeVerifier();
     if (codeVerifier == null || codeVerifier.isEmpty) {
       codeVerifier = List.generate(
-              128, (i) => _charset[Random.secure().nextInt(_charset.length)])
+          128, (i) => _charset[Random.secure().nextInt(_charset.length)])
           .join();
       await _saveCodeVerifier(codeVerifier);
     }
