@@ -123,24 +123,10 @@ class IdallInAppAuthentication {
     return _localDataSource.hasAccessToken();
   }
 
-  Future<void> setCodeFromWeb(String event) async{
-    if (event.contains('code')) {
-      Uri uri = Uri.parse(event);
-      String code = uri.queryParameters['code'];
-      debugPrint('code is $code');
-      print('client id is : $_clientId');
-      String state = uri.queryParameters['state'];
-      if (state != (await _getState())) {
-    throw (Exception('state in login is not verified'));
-    }
-    await _getAccessTokenFrom(event);
-  }
-  }
 
   void _listenForAuthCode() async {
     if (kIsWeb)
-  {;
-    // Uri.
+  {
     print('uri info as follow:');
     print(Uri.base.toString()); // http://localhost:8082/game.html?id=15&randomNumber=3.14
     print(Uri.base.query);  // id=15&randomNumber=3.14
@@ -160,12 +146,12 @@ class IdallInAppAuthentication {
           if (state != (await _getState())) {
             throw (Exception('state in login is not verified'));
           }
-          await _getAccessTokenFrom(event);
+          await getAccessTokenFrom(event);
         }
       });
   }
 
-  Future<void> _getAccessTokenFrom(String codeUrl) async {
+  Future<void> getAccessTokenFrom(String codeUrl) async {
     try {
       Uri uri = Uri.parse(codeUrl);
       oauth2.Client accessTokenClient =
