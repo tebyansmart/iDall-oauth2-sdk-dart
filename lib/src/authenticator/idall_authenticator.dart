@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'web_support.dart';
 import 'package:idall_in_app_authentication/src/local_data_source/local_data_source.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:uni_links/uni_links.dart';
@@ -126,6 +127,7 @@ class IdallInAppAuthentication {
   void _listenForAuthCode() async {
     if (kIsWeb)
   {
+    addWebSupport();
     print('uri info as follow:');
     print(Uri.base.toString()); // http://localhost:8082/game.html?id=15&randomNumber=3.14
     print(Uri.base.query);  // id=15&randomNumber=3.14
