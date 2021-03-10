@@ -88,6 +88,7 @@ class IdallInAppAuthentication {
       forceWebView: true,
       enableJavaScript: true,
       enableDomStorage: true,
+      webOnlyWindowName: '_self',
     );
   }
 
