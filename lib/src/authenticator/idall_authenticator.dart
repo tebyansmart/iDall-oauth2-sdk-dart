@@ -5,7 +5,6 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'web_support.dart';
 import 'package:idall_in_app_authentication/src/local_data_source/local_data_source.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:uni_links/uni_links.dart';
