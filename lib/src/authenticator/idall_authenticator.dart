@@ -25,7 +25,6 @@ class IdallInAppAuthentication {
   ///a stream that shows user is authenticated
   Stream<bool> get userIsAuthenticated => _userIsAuthenticatedSubject.stream;
 
-  final Uri _redirectUrl = Uri.parse('idall://idall-flutter-auth');
   static const String _idallDomain = 'accounts.idall.pro';
   static const String _path = '/.well-known/openid-configuration';
   String _clientId;
@@ -47,7 +46,7 @@ class IdallInAppAuthentication {
   }
 
   Future<IdallResponseModes> setIdallConfig(
-      String clientId, String scopes) async {
+      String clientId, Uri redirectUrl, String scopes) async {
     try {
 
       IdallResponseModes result = await _getIdallConfiguration();
@@ -61,7 +60,7 @@ class IdallInAppAuthentication {
         );
 
         _authorizationUrl = _grant.getAuthorizationUrl(
-          _redirectUrl,
+          redirectUrl,
           scopes: [
             scopes,
           ],
