@@ -85,9 +85,9 @@ class IdallInAppAuthentication {
     debugPrint('idall  token endpoint is $_authorizationUrl');
     return await launch(
       _authorizationUrl.toString(),
-      forceWebView: false,
-      enableJavaScript: false,
-      enableDomStorage: false,
+      forceWebView: true,
+      enableJavaScript: true,
+      enableDomStorage: true,
     );
   }
 
