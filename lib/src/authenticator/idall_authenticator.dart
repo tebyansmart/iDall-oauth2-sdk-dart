@@ -204,7 +204,7 @@ class IdallInAppAuthentication {
 
   Future<IdallResponseModes> _getIdallConfiguration() async {
     try {
-      String fullUrl = Uri.http(_idallDomain, _path, {}).toString();
+      String fullUrl = Uri.https(_idallDomain, _path).toString();
 
       /// make http call
       final response = await Dio().get(fullUrl,
