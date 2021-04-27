@@ -1,6 +1,6 @@
 name: idall_in_app_authentication
 description: A package to handle authorization with idall based on oAuth2
-version: 0.0.10
+version: 0.0.11
 author: TebyanSmart Dev team
 homepage: http://tebyansmart.com
 
