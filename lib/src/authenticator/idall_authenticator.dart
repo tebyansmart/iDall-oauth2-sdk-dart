@@ -25,7 +25,7 @@ class IdallAuthenticator{
   Stream<bool> get userIsAuthenticated=> _userIsAuthenticatedSubject;
 
    final Uri _redirectUrl =  Uri.parse('idall://idall-flutter-auth');
-  static const String _idallDomain='accounts.idall.pro';
+  static const String _idallDomain='dev.accounts.idall.pro';
   static const String _path= '/.well-known/openid-configuration';
   String _clientId;
 
