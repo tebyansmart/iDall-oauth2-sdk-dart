@@ -176,6 +176,7 @@ class IdallInAppAuthentication {
       _userIsAuthenticatedSubject.add(false);
       _localDataSource.setCodeVerifierToMemory('');
       _localDataSource.setIdallStateToMemory('');
+      _localDataSource.setAccessTokenToMemory('');
       throw Exception();
     }
   }
