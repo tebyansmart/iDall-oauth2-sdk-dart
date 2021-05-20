@@ -126,16 +126,6 @@ class IdallInAppAuthentication {
 
 
   void _listenForAuthCode() async {
-  //   if (kIsWeb)
-  // {
-  //   print('uri info as follow:');
-  //   print(Uri.base.toString()); // http://localhost:8082/game.html?id=15&randomNumber=3.14
-  //   print(Uri.base.query);  // id=15&randomNumber=3.14
-  //   print(Uri.base.queryParameters['randomNumber']);
-  //   return;
-  //   //todo:
-  // }
-  //   if(Platform.isAndroid || Platform.isIOS)
       linkStream.listen((event) async {
         debugPrint('listened value for link is $event');
         if (event.contains('code')) {
@@ -145,6 +135,7 @@ class IdallInAppAuthentication {
           print('client id is : $_clientId');
           String state = uri.queryParameters['state'];
           if (state != (await _getState())) {
+            _userIsAuthenticatedSubject.add(false);
             throw (Exception('state in login is not verified'));
           }
           await getAccessTokenFrom(event);
