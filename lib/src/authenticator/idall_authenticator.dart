@@ -174,6 +174,8 @@ class IdallInAppAuthentication {
     } catch (error, stackTrace) {
       debugPrint('error in get access token error is $error  $stackTrace');
       _userIsAuthenticatedSubject.add(false);
+      _localDataSource.setCodeVerifierToMemory('');
+      _localDataSource.setIdallStateToMemory('');
       throw Exception();
     }
   }
