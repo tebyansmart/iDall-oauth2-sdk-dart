@@ -25,7 +25,7 @@ class IdallInAppAuthentication {
   ///a stream that shows user is authenticated
   Stream<bool> get userIsAuthenticated => _userIsAuthenticatedSubject.stream;
 
-  static const String _idallDomain = 'dev.accounts.idall.pro';
+  static const String _idallDomain = 'accounts.idall.pro';
   static const String _path = '/.well-known/openid-configuration';
   String _clientId;
 
