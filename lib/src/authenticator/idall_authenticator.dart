@@ -72,7 +72,7 @@ class IdallInAppAuthentication {
       ///save to shared pref
       await _saveClientId(clientId);
       await _saveScopes(scopes);
-      print('set idall config success');
+      debugPrint('set idall config success');
       return result;
     } catch (error, stacktrace) {
       debugPrint('error in get OpenIdConfigs is $error  $stacktrace');
@@ -132,7 +132,7 @@ class IdallInAppAuthentication {
           Uri uri = Uri.parse(event);
           String code = uri.queryParameters['code'];
           debugPrint('code is $code');
-          print('client id is : $_clientId');
+          debugPrint('client id is : $_clientId');
           String state = uri.queryParameters['state'];
           if (state != (await _getState())) {
             _userIsAuthenticatedSubject.add(false);
