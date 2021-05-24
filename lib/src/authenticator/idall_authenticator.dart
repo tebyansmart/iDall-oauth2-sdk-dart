@@ -88,7 +88,7 @@ class IdallInAppAuthentication {
       forceWebView: kIsWeb,
       enableJavaScript: kIsWeb,
       enableDomStorage: kIsWeb,
-      webOnlyWindowName: '_self',
+      // webOnlyWindowName: '_self',
     );
   }
 
