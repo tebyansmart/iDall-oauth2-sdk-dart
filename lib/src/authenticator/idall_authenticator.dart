@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -13,6 +12,7 @@ import 'model/idall_response_modes.dart';
 import 'model/open_id_config_model.dart';
 import 'model/refresh_token.dart';
 import 'model/token_data.dart';
+import 'model/user_info.dart';
 
 class IdallInAppAuthentication {
 
@@ -21,12 +21,14 @@ class IdallInAppAuthentication {
   Uri _authorizationUrl;
   StreamController<bool> _userIsAuthenticatedSubject;
   LocalDataSource _localDataSource;
+  IdallUserInfo _idallUserInfo;
 
+  IdallUserInfo get idallUserInfo => _idallUserInfo;
   ///a stream that shows user is authenticated
   Stream<bool> get userIsAuthenticated => _userIsAuthenticatedSubject.stream;
 
   static const String _idallDomain = 'accounts.idall.pro';
-  static const String _path = '/.well-known/openid-configuration';
+  static const String _openIdPath = '/.well-known/openid-configuration';
   String _clientId;
 
   static const String _charset =
@@ -197,7 +199,7 @@ class IdallInAppAuthentication {
 
   Future<IdallResponseModes> _getIdallConfiguration() async {
     try {
-      String fullUrl = Uri.https(_idallDomain, _path).toString();
+      String fullUrl = Uri.https(_idallDomain, _openIdPath).toString();
 
       /// make http call
       final response = await Dio().get(fullUrl,
@@ -210,6 +212,35 @@ class IdallInAppAuthentication {
         if (_httpRequestEnumHandler(response.statusCode) ==
             IdallResponseModes.success)
           this._idallConfig = OpenIdConfigModel.fromJson(
+              json.decode(json.encode(response.data)));
+        return _httpRequestEnumHandler(response.statusCode);
+      } catch (e) {
+        return IdallResponseModes.failedToParseJson;
+      }
+    } on TimeoutException {
+      return IdallResponseModes.requestTimeOut;
+    } catch (error, stack) {
+      debugPrint("error in get  $error,$stack");
+      return IdallResponseModes.unknownError;
+    }
+  }
+
+  Future<IdallResponseModes> getUserInfo() async {
+    assert(_idallConfig != null);
+    try {
+      String fullUrl = Uri.https(_idallDomain, _idallConfig.userinfoEndpoint).toString();
+
+      /// make http call
+      final response = await Dio().get(fullUrl,
+          options: Options(
+            headers: {},
+            responseType: ResponseType.json,
+            validateStatus: (statusCode) => statusCode < 550,
+          ));
+      try {
+        if (_httpRequestEnumHandler(response.statusCode) ==
+            IdallResponseModes.success)
+          this._idallUserInfo = IdallUserInfo.fromJson(
               json.decode(json.encode(response.data)));
         return _httpRequestEnumHandler(response.statusCode);
       } catch (e) {
