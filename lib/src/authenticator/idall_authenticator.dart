@@ -233,7 +233,9 @@ class IdallInAppAuthentication {
       /// make http call
       final response = await Dio().get(fullUrl,
           options: Options(
-            headers: {},
+            headers: {
+              'Authorization':await getAccessToken(),
+            },
             responseType: ResponseType.json,
             validateStatus: (statusCode) => statusCode < 550,
           ));
