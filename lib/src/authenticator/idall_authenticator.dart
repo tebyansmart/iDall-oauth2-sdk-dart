@@ -228,7 +228,7 @@ class IdallInAppAuthentication {
   Future<IdallResponseModes> getUserInfo() async {
     assert(_idallConfig != null);
     try {
-      String fullUrl = Uri.https(_idallDomain, _idallConfig.userinfoEndpoint).toString();
+      String fullUrl = _idallConfig.userinfoEndpoint;
 
       /// make http call
       final response = await Dio().get(fullUrl,
@@ -242,8 +242,10 @@ class IdallInAppAuthentication {
             IdallResponseModes.success)
           this._idallUserInfo = IdallUserInfo.fromJson(
               json.decode(json.encode(response.data)));
+
         return _httpRequestEnumHandler(response.statusCode);
       } catch (e) {
+        debugPrint(e);
         return IdallResponseModes.failedToParseJson;
       }
     } on TimeoutException {
