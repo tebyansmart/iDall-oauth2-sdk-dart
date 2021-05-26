@@ -243,7 +243,7 @@ class IdallInAppAuthentication {
               responseType: ResponseType.json,
               validateStatus: (statusCode) => statusCode < 550,
             ));
-        debugPrint(response.statusCode.toString());
+        debugPrint(json.encode(response.data));
         debugPrint(response.data);
         if (_httpRequestEnumHandler(response.statusCode) ==
             IdallResponseModes.success)
