@@ -252,7 +252,7 @@ class IdallInAppAuthentication {
 
         return _httpRequestEnumHandler(response.statusCode);
       } catch (e) {
-        debugPrint(e);
+        print(e);
         return IdallResponseModes.failedToParseJson;
       }
     } on TimeoutException {
