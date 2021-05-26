@@ -225,21 +225,26 @@ class IdallInAppAuthentication {
     }
   }
 
+
   Future<IdallResponseModes> getUserInfo() async {
     assert(_idallConfig != null);
     try {
       String fullUrl = _idallConfig.userinfoEndpoint;
-
-      /// make http call
-      final response = await Dio().get(fullUrl,
-          options: Options(
-            headers: {
-              'Authorization':await getAccessToken(),
-            },
-            responseType: ResponseType.json,
-            validateStatus: (statusCode) => statusCode < 550,
-          ));
+      debugPrint('idall userinfo url is $fullUrl');
       try {
+        print('making the api call');
+        /// make http call
+        final response = await Dio().get(fullUrl,
+            options: Options(
+              headers: {
+                "Content-type": "application/json",
+                'Authorization': "Bearer " + await getAccessToken(),
+              },
+              responseType: ResponseType.json,
+              validateStatus: (statusCode) => statusCode < 550,
+            ));
+        debugPrint(response.statusCode.toString());
+        debugPrint(response.data);
         if (_httpRequestEnumHandler(response.statusCode) ==
             IdallResponseModes.success)
           this._idallUserInfo = IdallUserInfo.fromJson(
