@@ -84,6 +84,9 @@ class IdallInAppAuthentication {
 
   Future<bool> authenticate() async {
     assert(_idallConfig != null);
+
+
+   _authorizationUrl.queryParameters['prompt']='login';
     debugPrint('idall  token endpoint is $_authorizationUrl');
     return await launch(
       _authorizationUrl.toString(),
