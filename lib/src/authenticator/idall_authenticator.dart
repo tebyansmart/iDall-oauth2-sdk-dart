@@ -15,7 +15,6 @@ import 'model/token_data.dart';
 import 'model/user_info.dart';
 
 class IdallInAppAuthentication {
-
   OpenIdConfigModel _idallConfig;
   oauth2.AuthorizationCodeGrant _grant;
   Uri _authorizationUrl;
@@ -24,6 +23,7 @@ class IdallInAppAuthentication {
   IdallUserInfo _idallUserInfo;
 
   IdallUserInfo get idallUserInfo => _idallUserInfo;
+
   ///a stream that shows user is authenticated
   Stream<bool> get userIsAuthenticated => _userIsAuthenticatedSubject.stream;
 
@@ -36,7 +36,7 @@ class IdallInAppAuthentication {
 
   ///make class singleton
   static final IdallInAppAuthentication _instance =
-  IdallInAppAuthentication._internal();
+      IdallInAppAuthentication._internal();
 
   factory IdallInAppAuthentication() => _instance;
 
@@ -50,7 +50,6 @@ class IdallInAppAuthentication {
   Future<IdallResponseModes> setIdallConfig(
       String clientId, Uri redirectUrl, String scopes) async {
     try {
-
       IdallResponseModes result = await _getIdallConfiguration();
       if (result == IdallResponseModes.success) {
         _grant = oauth2.AuthorizationCodeGrant(
@@ -85,8 +84,7 @@ class IdallInAppAuthentication {
   Future<bool> authenticate() async {
     assert(_idallConfig != null);
 
-
-   _authorizationUrl.queryParameters['prompt']='login';
+    // _authorizationUrl.queryParameters['prompt'] = 'login';
     debugPrint('idall  token endpoint is $_authorizationUrl');
     return await launch(
       _authorizationUrl.toString(),
@@ -130,36 +128,35 @@ class IdallInAppAuthentication {
     return _localDataSource.hasAccessToken();
   }
 
-
   void _listenForAuthCode() async {
-      linkStream.listen((event) async {
-        debugPrint('listened value for link is $event');
-        if (event.contains('code')) {
-          Uri uri = Uri.parse(event);
-          String code = uri.queryParameters['code'];
-          debugPrint('code is $code');
-          debugPrint('client id is : $_clientId');
-          String state = uri.queryParameters['state'];
-          if (state != (await _getState())) {
-            _userIsAuthenticatedSubject.add(false);
-            throw (Exception('state in login is not verified'));
-          }
-          await getAccessTokenFrom(event);
+    linkStream.listen((event) async {
+      debugPrint('listened value for link is $event');
+      if (event.contains('code')) {
+        Uri uri = Uri.parse(event);
+        String code = uri.queryParameters['code'];
+        debugPrint('code is $code');
+        debugPrint('client id is : $_clientId');
+        String state = uri.queryParameters['state'];
+        if (state != (await _getState())) {
+          _userIsAuthenticatedSubject.add(false);
+          throw (Exception('state in login is not verified'));
         }
-      });
+        await getAccessTokenFrom(event);
+      }
+    });
   }
 
   Future<void> getAccessTokenFrom(String codeUrl) async {
     try {
       Uri uri = Uri.parse(codeUrl);
       oauth2.Client accessTokenClient =
-      await _grant.handleAuthorizationResponse(uri.queryParameters);
+          await _grant.handleAuthorizationResponse(uri.queryParameters);
       debugPrint(
           'response for access token  ${accessTokenClient.credentials.accessToken}');
       TokenData tokenData = TokenData(
           accessToken: accessTokenClient.credentials.accessToken,
           expirationDate:
-          accessTokenClient.credentials.expiration.millisecondsSinceEpoch,
+              accessTokenClient.credentials.expiration.millisecondsSinceEpoch,
           refreshToken: accessTokenClient.credentials.refreshToken);
 
       await _saveAccessToken(tokenData.accessToken);
@@ -228,7 +225,6 @@ class IdallInAppAuthentication {
     }
   }
 
-
   Future<IdallResponseModes> getUserInfo() async {
     assert(_idallConfig != null);
     try {
@@ -236,6 +232,7 @@ class IdallInAppAuthentication {
       debugPrint('idall userinfo url is $fullUrl');
       try {
         print('making the api call');
+
         /// make http call
         final response = await Dio().get(fullUrl,
             options: Options(
@@ -250,8 +247,8 @@ class IdallInAppAuthentication {
         debugPrint(response.statusCode.toString());
         if (_httpRequestEnumHandler(response.statusCode) ==
             IdallResponseModes.success)
-          this._idallUserInfo = IdallUserInfo.fromJson(
-              json.decode(json.encode(response.data)));
+          this._idallUserInfo =
+              IdallUserInfo.fromJson(json.decode(json.encode(response.data)));
 
         return _httpRequestEnumHandler(response.statusCode);
       } catch (e) {
@@ -334,7 +331,7 @@ class IdallInAppAuthentication {
     await _localDataSource.setAccessTokenToMemory(refreshToken.accessToken);
     await _localDataSource.setExpirationDateToMemory(
         (((refreshToken.expiresIn * 1000) +
-            DateTime.now().millisecondsSinceEpoch))
+                DateTime.now().millisecondsSinceEpoch))
             .toString());
     await _localDataSource.setRefreshTokenToMemory(refreshToken.refreshToken);
   }
@@ -392,7 +389,7 @@ class IdallInAppAuthentication {
     String codeVerifier = await getCodeVerifier();
     if (codeVerifier == null || codeVerifier.isEmpty) {
       codeVerifier = List.generate(
-          128, (i) => _charset[Random.secure().nextInt(_charset.length)])
+              128, (i) => _charset[Random.secure().nextInt(_charset.length)])
           .join();
       await _saveCodeVerifier(codeVerifier);
     }
