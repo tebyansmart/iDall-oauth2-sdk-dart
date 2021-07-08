@@ -23,6 +23,8 @@ class IdallInAppAuthentication {
   LocalDataSource _localDataSource;
   IdallUserInfo _idallUserInfo;
 
+  bool _usePrompt=false;
+
   IdallUserInfo get idallUserInfo => _idallUserInfo;
 
   ///a stream that shows user is authenticated
@@ -49,8 +51,9 @@ class IdallInAppAuthentication {
   }
 
   Future<IdallResponseModes> setIdallConfig(
-      String clientId, Uri redirectUrl, String scopes) async {
+      String clientId, Uri redirectUrl, String scopes, bool usePrompt) async {
     try {
+      this._usePrompt = usePrompt;
       IdallResponseModes result = await _getIdallConfiguration();
       if (result == IdallResponseModes.success) {
         _grant = oauth2.AuthorizationCodeGrant(
@@ -85,11 +88,13 @@ class IdallInAppAuthentication {
   Future<bool> authenticate() async {
     assert(_idallConfig != null);
 
-    var newUri = addQueryParameters(_authorizationUrl, {'prompt': 'login'});
+    if (_usePrompt)
+      _authorizationUrl =
+          addQueryParameters(_authorizationUrl, {'prompt': 'login'});
 
-    debugPrint('idall  token endpoint is $newUri');
+    debugPrint('idall  token endpoint is $_authorizationUrl');
     return await launch(
-      newUri.toString(),
+      _authorizationUrl.toString(),
       forceWebView: kIsWeb,
       // forceSafariVC: true,
       enableJavaScript: kIsWeb,
