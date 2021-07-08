@@ -13,6 +13,7 @@ import 'model/open_id_config_model.dart';
 import 'model/refresh_token.dart';
 import 'model/token_data.dart';
 import 'model/user_info.dart';
+import 'package:oauth2/src/utils.dart';
 
 class IdallInAppAuthentication {
   OpenIdConfigModel _idallConfig;
@@ -84,25 +85,11 @@ class IdallInAppAuthentication {
   Future<bool> authenticate() async {
     assert(_idallConfig != null);
 
-    var urlString=_authorizationUrl.toString() + '&' + 'prompt=login';
+    var newUri = addQueryParameters(_authorizationUrl, {'prompt': 'login'});
 
-
-    // var queryParams = _authorizationUrl.queryParameters;
-    // queryParams['prompt'] = 'login';
-
-    // Uri uri = Uri(scheme: _authorizationUrl.scheme,
-    //     userInfo: _authorizationUrl.userInfo,
-    //     host: _authorizationUrl.host,
-    //     port: _authorizationUrl.port,
-    //     path: _authorizationUrl.path,
-    //     pathSegments: _authorizationUrl.pathSegments,
-    //     query: _authorizationUrl.query,
-    //     fragment: _authorizationUrl.fragment,
-    //     queryParameters
-    //         : queryParams);
-    debugPrint('idall  token endpoint is $urlString');
+    debugPrint('idall  token endpoint is $newUri');
     return await launch(
-      urlString,
+      newUri.toString(),
       forceWebView: kIsWeb,
       // forceSafariVC: true,
       enableJavaScript: kIsWeb,
@@ -214,7 +201,10 @@ class IdallInAppAuthentication {
 
   Future<IdallResponseModes> _getIdallConfiguration() async {
     try {
-      String fullUrl = Uri.https(_idallDomain, _openIdPath,).toString();
+      String fullUrl = Uri.https(
+        _idallDomain,
+        _openIdPath,
+      ).toString();
 
       /// make http call
       final response = await Dio().get(fullUrl,
