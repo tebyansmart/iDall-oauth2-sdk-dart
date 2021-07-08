@@ -84,10 +84,25 @@ class IdallInAppAuthentication {
   Future<bool> authenticate() async {
     assert(_idallConfig != null);
 
-    _authorizationUrl.queryParameters.addAll({'prompt':'login'});
-    debugPrint('idall  token endpoint is $_authorizationUrl');
+    var urlString=_authorizationUrl.toString() + '?' + 'prompt=login';
+
+
+    // var queryParams = _authorizationUrl.queryParameters;
+    // queryParams['prompt'] = 'login';
+
+    // Uri uri = Uri(scheme: _authorizationUrl.scheme,
+    //     userInfo: _authorizationUrl.userInfo,
+    //     host: _authorizationUrl.host,
+    //     port: _authorizationUrl.port,
+    //     path: _authorizationUrl.path,
+    //     pathSegments: _authorizationUrl.pathSegments,
+    //     query: _authorizationUrl.query,
+    //     fragment: _authorizationUrl.fragment,
+    //     queryParameters
+    //         : queryParams);
+    debugPrint('idall  token endpoint is $urlString');
     return await launch(
-      _authorizationUrl.toString(),
+      urlString,
       forceWebView: kIsWeb,
       // forceSafariVC: true,
       enableJavaScript: kIsWeb,
@@ -199,7 +214,7 @@ class IdallInAppAuthentication {
 
   Future<IdallResponseModes> _getIdallConfiguration() async {
     try {
-      String fullUrl = Uri.https(_idallDomain, _openIdPath).toString();
+      String fullUrl = Uri.https(_idallDomain, _openIdPath,).toString();
 
       /// make http call
       final response = await Dio().get(fullUrl,
