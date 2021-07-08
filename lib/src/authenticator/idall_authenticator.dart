@@ -84,7 +84,7 @@ class IdallInAppAuthentication {
   Future<bool> authenticate() async {
     assert(_idallConfig != null);
 
-    var urlString=_authorizationUrl.toString() + '?' + 'prompt=login';
+    var urlString=_authorizationUrl.toString() + '&' + 'prompt=login';
 
 
     // var queryParams = _authorizationUrl.queryParameters;
